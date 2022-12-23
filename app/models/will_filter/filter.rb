@@ -581,21 +581,6 @@ module WillFilter
         @format = params[:wf_export_format].to_sym
       end
 
-      # Note : This is the old implementations of the will_filter gem
-      # i = 0
-      # while params["wf_c#{i}"] do
-      #   conditon_key = params["wf_c#{i}"]
-      #   operator_key = params["wf_o#{i}"]
-      #   values = []
-      #   j = 0
-      #   while params["wf_v#{i}_#{j}"] do
-      #     values << params["wf_v#{i}_#{j}"]
-      #     j += 1
-      #   end
-      #   i += 1
-      #   add_condition(conditon_key, operator_key.to_sym, values)
-      # end
-
       if params[:filter].present?
         params[:filter].each do |hash|
           values =  hash[:values] || Array(hash[:value])
