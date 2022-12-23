@@ -297,7 +297,7 @@ module WillFilter
     end
 
     def default_per_page
-      100
+      30
     end
 
     def per_page
@@ -501,9 +501,9 @@ module WillFilter
       params[:wf_type]          = self.class.name
       params[:wf_match]         = match
       params[:wf_model]         = model_class_name
-      params[:wf_order]         = order
-      params[:wf_order_type]    = order_type
-      params[:wf_per_page]      = per_page
+      params[:order]            = order
+      params[:order_type]       = order_type
+      params[:per_page]         = per_page
       params[:wf_export_fields] = fields.join(',')
       params[:wf_export_format] = format
 
@@ -560,10 +560,10 @@ module WillFilter
 
       self.model_class_name = params[:wf_model]       if params[:wf_model]
 
-      @per_page             = params[:wf_per_page]    || default_per_page
+      @per_page             = params[:per_page]       || default_per_page
       @page                 = params[:page]           || 1
-      @order_type           = params[:wf_order_type]  || default_order_type
-      @order                = params[:wf_order]       || default_order
+      @order_type           = params[:order_type]     || default_order_type
+      @order                = params[:order]          || default_order
 
       self.id   =  params[:wf_id].to_i  unless params[:wf_id].blank?
       self.name =  params[:wf_name]     unless params[:wf_name].blank?
@@ -581,18 +581,26 @@ module WillFilter
         @format = params[:wf_export_format].to_sym
       end
 
-      i = 0
-      while params["wf_c#{i}"] do
-        conditon_key = params["wf_c#{i}"]
-        operator_key = params["wf_o#{i}"]
-        values = []
-        j = 0
-        while params["wf_v#{i}_#{j}"] do
-          values << params["wf_v#{i}_#{j}"]
-          j += 1
+      # Note : This is the old implementations of the will_filter gem
+      # i = 0
+      # while params["wf_c#{i}"] do
+      #   conditon_key = params["wf_c#{i}"]
+      #   operator_key = params["wf_o#{i}"]
+      #   values = []
+      #   j = 0
+      #   while params["wf_v#{i}_#{j}"] do
+      #     values << params["wf_v#{i}_#{j}"]
+      #     j += 1
+      #   end
+      #   i += 1
+      #   add_condition(conditon_key, operator_key.to_sym, values)
+      # end
+
+      if params[:filter].present?
+        params[:filter].each do |hash|
+          values =  hash[:values] || Array(hash[:value])
+          add_condition(hash[:condition], hash[:operator], values)
         end
-        i += 1
-        add_condition(conditon_key, operator_key.to_sym, values)
       end
 
       if params[:wf_submitted] == 'true'
