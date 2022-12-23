@@ -947,7 +947,7 @@ module WillFilter
         end
 
 
-        recs = recs.page(page).per(per_page)
+        recs = recs.paginate({ :page => page, :per_page => per_page })
 
         recs.wf_filter = self
 

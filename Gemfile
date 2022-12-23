@@ -10,7 +10,7 @@ gemspec
 
 gem 'bundler', ['>= 1.0.0']
 
-gem 'will_paginate'
+gem 'will_paginate', '~> 3.3'
 
 group :development do
   gem 'rspec'
