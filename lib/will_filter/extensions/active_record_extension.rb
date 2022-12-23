@@ -51,7 +51,6 @@ module WillFilter
         else
           filter_class = WillFilter::Filter
         end
-
         filter_class.new(self).deserialize_from_params(params).results
       end
     end

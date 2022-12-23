@@ -10,12 +10,7 @@ gemspec
 
 gem 'bundler', ['>= 1.0.0']
 
-gem 'jquery-rails'
-gem 'jquery-ui-rails'
-gem 'bootstrap-sass'
-gem 'kaminari'
-
-gem 'bootstrap-sass'
+gem 'will_paginate'
 
 group :development do
   gem 'rspec'
@@ -25,11 +20,5 @@ group :development do
   gem 'spork'
   gem 'watchr'
   gem 'rr'
-end
-
-group :assets do
-  gem 'sass-rails'
-  gem 'coffee-rails'
-  gem 'uglifier'
 end
 
