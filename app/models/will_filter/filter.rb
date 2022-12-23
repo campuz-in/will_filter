@@ -584,7 +584,7 @@ module WillFilter
       if params[:filter].present?
         params[:filter].each do |hash|
           values =  hash[:values] || Array(hash[:value])
-          add_condition(hash[:condition], hash[:operator], values)
+          add_condition(hash[:condition], hash[:operator].to_sym, values)
         end
       end
 
