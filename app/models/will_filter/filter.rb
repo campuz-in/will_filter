@@ -163,16 +163,30 @@ module WillFilter
       []
     end
 
-    def model_columns
-      @model_columns ||= model_class.columns
+    def model_association
+      @model_association ||= model_class.reflect_on_all_associations.map {|m_association| m_association.class_name}
     end
 
-    def model_column_keys
-      @model_column_keys ||= model_columns.collect{|col| col.name.to_sym}
+    def model_columns(model_name)
+      model_name.constantize.columns
+    end
+
+    def model_column_keys(model_name = model_class.to_s)
+      model_columns(model_name).collect{|col| col.name.to_sym}
     end
 
     def contains_column?(key)
-      model_column_keys.index(key.to_sym) != nil
+      #  key = 'user.first_name'
+      split_key = key.split('.')
+      if split_key.count > 1
+        model_name = split_key.first.camelcase  # User
+        attr_name = split_key.last.to_sym       # :first_name
+        return false unless model_association.include?(model_name)
+
+        model_column_keys(model_name).index(attr_name) != nil
+      else
+        model_column_keys.index(key.to_sym) != nil
+      end
     end
 
     def definition
@@ -256,7 +270,7 @@ module WillFilter
 
     def order
       @order ||= default_order
-      @order = default_order unless contains_column?(@order.to_sym)
+      @order = default_order unless contains_column?(@order)
       @order
     end
 
@@ -498,14 +512,14 @@ module WillFilter
     #############################################################################
     def serialize_to_params(merge_params = {})
       params = {}
-      params[:wf_type]          = self.class.name
-      params[:wf_match]         = match
-      params[:wf_model]         = model_class_name
-      params[:order]            = order
-      params[:order_type]       = order_type
-      params[:per_page]         = per_page
-      params[:wf_export_fields] = fields.join(',')
-      params[:wf_export_format] = format
+      params[:wf_type]                 = self.class.name
+      params[:wf_match]                = match
+      params[:wf_model]                = model_class_name
+      params[:sort][:order]            = order
+      params[:sort][:order_type]       = order_type
+      params[:per_page]                = per_page
+      params[:wf_export_fields]        = fields.join(',')
+      params[:wf_export_format]        = format
 
       0.upto(size - 1) do |index|
         condition = condition_at(index)
@@ -555,15 +569,18 @@ module WillFilter
       params = HashWithIndifferentAccess.new(params) unless params.is_a?(HashWithIndifferentAccess)
 
       @conditions = []
-      @match                = params[:wf_match]       || :all
-      @key                  = params[:wf_key]         || self.id.to_s
+      @match                = params[:wf_match]               || :all
+      @key                  = params[:wf_key]                 || self.id.to_s
 
-      self.model_class_name = params[:wf_model]       if params[:wf_model]
+      self.model_class_name = params[:wf_model]               if params[:wf_model]
 
-      @per_page             = params[:per_page]       || default_per_page
-      @page                 = params[:page]           || 1
-      @order_type           = params[:order_type]     || default_order_type
-      @order                = params[:order]          || default_order
+      @per_page             = params[:per_page]               || default_per_page
+      @page                 = params[:page]                   || 1
+
+      if params[:sort].present?
+        @order_type         = params[:sort][:order_type]      || default_order_type
+        @order              = params[:sort][:order]           || default_order
+      end
 
       self.id   =  params[:wf_id].to_i  unless params[:wf_id].blank?
       self.name =  params[:wf_name]     unless params[:wf_name].blank?
@@ -928,9 +945,9 @@ module WillFilter
 
         if custom_conditions?
           recs = process_custom_conditions(recs.all)
+          # TODO : Need to replace with will paginate
           recs = Kaminari.paginate_array(recs)
         end
-
 
         recs = recs.paginate({ :page => page, :per_page => per_page })
 
