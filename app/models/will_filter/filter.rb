@@ -160,14 +160,14 @@ module WillFilter
     # [[joining_model_name, column_name], [joining_model_name, column_name]]
     #############################################################################
     def inner_joins
-      []
+      model_class ? model_class.reflect_on_all_associations.map {|m_association| m_association.class_name.downcase} : []
     end
 
     def model_association
       @model_association ||= model_class.reflect_on_all_associations.map {|m_association| m_association.class_name}
     end
 
-    def model_columns(model_name)
+    def model_columns(model_name = model_class.to_s)
       model_name.constantize.columns
     end
 
@@ -177,7 +177,7 @@ module WillFilter
 
     def contains_column?(key)
       #  key = 'user.first_name'
-      split_key = key.split('.')
+      split_key = key.to_s.split('.')
       if split_key.count > 1
         model_name = split_key.first.camelcase  # User
         attr_name = split_key.last.to_sym       # :first_name
@@ -270,7 +270,7 @@ module WillFilter
 
     def order
       @order ||= default_order
-      @order = default_order unless contains_column?(@order)
+      @order = default_order unless contains_column?(@order.to_sym)
       @order
     end
 
