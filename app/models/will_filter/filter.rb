@@ -158,9 +158,10 @@ module WillFilter
     #############################################################################
     # Inner Joins come in a form of
     # [[joining_model_name, column_name], [joining_model_name, column_name]]
+    # Override this method in the child class if required
     #############################################################################
     def inner_joins
-      model_class ? model_class.reflect_on_all_associations.map {|m_association| m_association.class_name.downcase} : []
+      @inner_joins || []
     end
 
     def model_association
@@ -599,6 +600,8 @@ module WillFilter
       end
 
       if params[:filter].present?
+        @inner_joins = model_class.reflect_on_all_associations.map {|m_association| m_association.name.downcase} if model_class
+
         params[:filter].each do |hash|
           values =  hash[:values] || Array(hash[:value])
           add_condition(hash[:condition], hash[:operator].to_sym, values)
