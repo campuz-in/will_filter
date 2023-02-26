@@ -3,13 +3,16 @@
 # Rails 7.0 Support for protected_attributes_continued.
 
 # The Inheritance module in the protected_attributes_continued is not compatible with will_filter gem.
-# So, we are rewriting the "new" method with the native Rails 7.0 - ActiveRecord "new" method
+# So, we are replacing the "new" method from MassAssigment with the native Rails 7.0 - ActiveRecord "new" method
+# + some extra changes, Please take a look at the Rails 7.0 - ActiveRecord "new" method, to find the changes
 module ActiveRecord
   module Inheritance
+    extend ActiveSupport::Concern
+
     module ClassMethods
       undef :new
 
-      def new(attributes = nil, &block)
+      def new(attributes = nil, options={}, &block)
         if abstract_class? || self == Base
           raise NotImplementedError, "#{self} is an abstract class and cannot be instantiated."
         end
@@ -27,9 +30,9 @@ module ActiveRecord
         end
 
         if subclass && subclass != self
-          subclass.new(attributes, &block)
+          subclass.new(attributes, options={}, &block)
         else
-          super
+          super(attributes, &block)
         end
       end
     end

@@ -69,7 +69,6 @@ module WillFilter
       if WillFilter::Config.require_filter_extensions? and self.class.name == 'WillFilter::Filter'
         raise WillFilter::FilterException.new('Your configuration requires you to subclass the filter. Default filter cannot be created.')
       end
-
       self.model_class_name = model_class.to_s
     end
 
