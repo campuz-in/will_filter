@@ -599,7 +599,8 @@ module WillFilter
       end
 
       if params[:filter].present?
-        @inner_joins = model_class.reflect_on_all_associations.map {|m_association| m_association.name.downcase} if model_class
+        model_assoications = model_class.reflect_on_all_associations.map {|m_association| m_association.name.downcase} if model_class
+        @inner_joins = model_assoications & params[:filter].map {|hsh| hsh["condition"].split('.').first.to_sym}
 
         params[:filter].each do |hash|
           values =  hash[:values] || Array(hash[:value])
