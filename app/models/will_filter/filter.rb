@@ -200,7 +200,7 @@ module WillFilter
         inner_joins.each do |inner_join|
           join_class = association_class(inner_join)
           join_class.columns.each do |col|
-            defs[:"#{join_class.to_s.underscore}.#{col.name.to_sym}"] = default_condition_definition_for(col.name, col.sql_type)
+            defs[:"#{inner_join.to_s.underscore}.#{col.name.to_sym}"] = default_condition_definition_for(col.name, col.sql_type)
           end
         end
 
@@ -211,7 +211,7 @@ module WillFilter
     def sql_attribute_for_key(key)
       if key.to_s.index('.')
         parts = key.to_s.split('.')
-        join_class = parts.first.camelcase.constantize
+        join_class = parts.first.singularize.camelcase.constantize
         "#{join_class.table_name}.#{parts.last}"
       else
         "#{table_name}.#{key}"
